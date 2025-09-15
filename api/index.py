@@ -1,10 +1,13 @@
 from flask import Flask, render_template, request, jsonify
 from num2words import num2words
-from text2digits import text2digits
+from text2digits.text2digits import Text2Digits
 import base64
 import re
 
 app = Flask(__name__)
+
+# Reusable text->digits converter
+_t2d = Text2Digits()
 
 def text_to_number(text):
     """Convert English text number to integer"""
@@ -15,15 +18,27 @@ def text_to_number(text):
     if text in ['zero', 'nil']:
         return 0
     
-    # Dictionary for special number words
+    # Try using text2digits to convert multi-word text numbers (e.g., "forty two" -> "42")
+    try:
+        # Use Text2Digits instance to convert textual numbers (e.g. "forty two" -> "42")
+        converted = _t2d.convert(text)
+        # text2digits returns a string; try to extract integer
+        # Remove commas and spaces
+        normalized = re.sub(r'[ ,]', '', converted)
+        if re.fullmatch(r"-?\d+", normalized):
+            return int(normalized)
+    except Exception:
+        pass
+
+    # Dictionary for simple number words as fallback
     number_words = {
         'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5,
         'six': 6, 'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10
     }
-    
+
     if text in number_words:
         return number_words[text]
-    
+
     raise ValueError("Unable to convert text to number")
 
 def number_to_text(number):

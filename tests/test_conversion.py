@@ -24,6 +24,7 @@ def from_b64_le(s: str) -> int:
     ("one", 1),
     ("two", 2),
     ("ten", 10),
+    ("forty two", 42),
 ])
 def test_text_to_number_basic(text, expected):
     assert index.text_to_number(text) == expected
@@ -31,7 +32,7 @@ def test_text_to_number_basic(text, expected):
 
 def test_text_to_number_invalid():
     with pytest.raises(ValueError):
-        index.text_to_number("one hundred")
+        index.text_to_number("foobar")
 
 
 @pytest.mark.parametrize("n,bin_s,oct_s,dec_s,hex_s", [
