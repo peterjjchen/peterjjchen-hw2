@@ -38,16 +38,21 @@ def base64_to_number(b64_str):
     try:
         # Decode base64 to bytes, then convert bytes to integer
         decoded_bytes = base64.b64decode(b64_str)
-        return int.from_bytes(decoded_bytes, byteorder='big')
-    except:
+        # Interpret bytes as little-endian per assignment spec
+        return int.from_bytes(decoded_bytes, byteorder='little')
+    except Exception:
         raise ValueError("Invalid base64 input")
 
 def number_to_base64(number):
     """Convert integer to base64"""
     try:
         # Convert integer to bytes, then encode to base64
-        byte_count = (number.bit_length() + 7) // 8
-        number_bytes = number.to_bytes(byte_count, byteorder='big')
+        if number == 0:
+            # Ensure zero is represented as a single zero byte
+            number_bytes = (0).to_bytes(1, byteorder='little')
+        else:
+            byte_count = (number.bit_length() + 7) // 8
+            number_bytes = number.to_bytes(byte_count, byteorder='little')
         return base64.b64encode(number_bytes).decode('utf-8')
     except:
         raise ValueError("Unable to convert to base64")
